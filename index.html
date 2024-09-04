@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload, Crop, and Resize</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/cropperjs/dist/cropper.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* background-color: #fff; */
+            padding: 20px;
+            border-radius: 10px;
+            /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
+            width: 955px;
+            height: 498px;
+            position: relative;
+        }
+
+        .upload-box {
+            position: absolute;
+            margin-left: -732px;
+            margin-top: 22px;
+            width: 420px;
+            height: 390px;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            overflow: hidden;
+            z-index: 1;
+            margin-right: 33px;
+            background-color: #f8f8f8;
+            /* background-color: #fff; */
+        }
+
+        .upload-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            background-repeat: no-repeat;
+            display: block;
+        }
+
+        .upload-box label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .content {
+            margin-top: 10px;
+            text-align: center;
+            margin-left: 72px;
+            line-height: 44px;
+            width: 322px;
+            z-index: 6;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .column {
+            flex: 1;
+        }
+
+        input[type="number"] {
+            width: 100px;
+            padding: 5px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #333;
+            color: #fff;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+
+
+        #downloadButton {
+            display: none;
+            text-decoration: none;
+            padding: 10px 13px;
+            text-align: center;
+            margin-left: 795px;
+            border-radius: 5px;
+            background-color: #000000;
+            color: white;
+            margin-top: -5px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        #downloadButton:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+
+        #previewContainer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .preview-item {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            overflow: hidden;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 274px;
+            margin-left: -222px;
+        }
+
+        .preview-item img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+
+        }
+
+        #portraitButton {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #333;
+            color: #fff;
+            cursor: pointer;
+            margin-top: 10px;
+            margin-left: 10px;
+        }
+
+        .image-button {
+            display: inline-flex;
+            /* Align text and image */
+            align-items: center;
+            /* Center the content vertically */
+            background-image: url('./portButton.png');
+            /* Button background color */
+            color: #ffffff;
+            /* Button text color */
+            padding: 10px 20px;
+            /* Padding inside the button */
+            border: none;
+            /* Remove default border */
+            border-radius: 5px;
+            /* Rounded corners */
+            cursor: pointer;
+            /* Pointer cursor on hover */
+            text-decoration: none;
+            /* Remove text underline */
+            position: fixed;
+            font-size: 16px;
+            /* Font size */
+        }
+
+        .image-button img {
+            width: 20px;
+            /* Width of the image */
+            height: 20px;
+            /* Height of the image */
+            margin-right: 10px;
+            /* Space between image and text */
+        }
+
+        .image-button:hover {
+            background-color: #35424a;
+            /* Change background on hover */
+            color: #ffffff;
+            /* Ensure text color remains white */
+        }
+
+        #portraitButton:hover {
+            background-color: #555;
+        }
+
+        /* Styles for background color options */
+        #bgColorSelect {
+            margin-top: 5px;
+        }
+
+        #fitFillSelect {
+            margin-top: 5px;
+        }
+
+        .preview-item .remove-button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: #000000;
+            color: white;
+            border: none;
+            padding: 6px 6px;
+            border-radius: 100%;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        #resultContainer {
+            margin-top: -82px;
+            text-align: center;
+            margin-left: 233px;
+            width: 480px;
+            /* padding-top: 32px; */
+
+        }
+
+        #resultImage {
+            height: 49vh;
+            width: 153px;
+            margin-left: 353px;
+            margin-top: -219px;
+            object-fit: contain;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="margin-top: 20px; margin-bottom: 53px;" id="resize-tool">
+        <!-- <h1 style="margin-left: 403px;">Image Resizer</h1> -->
+        <div class="wrapper">
+            <div class="upload-box">
+                <input type="file" id="fileInput" accept="image/*" multiple hidden>
+                <label for="fileInput">
+                    <span><img height="45vh" width="45vh" src="https://cdn-icons-png.flaticon.com/128/1092/1092216.png"
+                            alt=""></span>
+                    <p style="color:#979393;"> <b>Click to upload </b>or drag an drop an image <br><br><span
+                            style="font-size: 14px;">( PNG , JPG , JPEG , HEIC )</span></p>
+                </label>
+            </div>
+            <div style="margin-top: 149px; display: none; position: absolute; margin-left: -432px;" id="previewContainer"></div>
+            <div style="margin-top: -4px; margin-left: 30px;" class="content">
+                <h2 style="font-size: 19px; margin-left: 16px;">Custom Resize</h2>
+                <div style="margin-left: 42px;" class="row sizes">
+                    <div class="column width">
+                        <label style="margin-left: -13px;" for="widthInput">Width</label><br>
+                        <input style="padding: 7px 8px;" type="number" id="widthInput" placeholder="Width">
+                    </div>
+                    <div class="column height">
+                        <label style="margin-left: -13px;" for="heightInput">Height</label>
+                        <input style="padding: 7px 8px;" type="number" id="heightInput" placeholder="Height">
+                    </div>
+                </div>
+
+                <div class="row checkboxes">
+                    <!-- <div class="column ratio">
+                    <input type="checkbox" id="ratioInput" checked>
+                    <label for="ratioInput">Lock aspect ratio</label>
+                </div>
+                <div class="column quality">
+                    <input type="checkbox" id="qualityInput">
+                    <label for="qualityInput">Reduce quality</label>
+                </div> -->
+
+                    <b style="margin-left: 172px;margin-top: -5px;">( Or )</b>
+                </div>
+                <button style="display:none;" id="cropButton">Crop Image</button>
+                <!-- Small (640x480) -->
+                <div style="width: 333px; margin-top: -18px; margin-left: 46px;">
+                    <button
+                        style="width: 106px; padding: 12px; margin-left: -23px; background-color: transparent; height: 12vh;"
+                        class="size-button" data-width="640" data-height="480"><img
+                            style="height: 9vh;  margin-left: -12px;  border-radius: 5px;" src="./portButton.png"
+                            alt="Button Image"></button>
+                    <button
+                        style="width: 106px; padding: 12px; margin-left: 9px; background-color: transparent; height: 12vh;"
+                        class="size-button" data-width="1280" data-height="720"><img
+                            style="height: 9vh;  margin-left: -12px;  border-radius: 5px;" src="./landscape utton.png"
+                            alt="Button Image"></button>
+                    <button
+                        style="width: 111.5px; padding: 12px; margin-left: 9px; background-color: #e4e0f0;  height: 9vh;"
+                        class="size-button" data-width="1920" data-height="1080"><img
+                            style="height: 9vh; margin-top: -12px; width: 94px; margin-left: -13px;  border-radius: 5px;"
+                            src="./story button.png" alt="Button Image"></button>
+                </div>
+              
+                <button style="margin-top: 17px; margin-left: 73px; padding: 14px 22px;" id="resizeButton">Resize
+                    Image</button>
+            </div>
+            <h2 style="margin-left: 757px; margin-top: 17px; position: absolute;">Result</h2>
+            <br>
+            <br>
+            <br>
+            <br>
+            <div style="margin-left: 449px; margin-top: -242px; " id="resultContainer" style="display:none;">
+                <img id="resultImage" alt="Result Image">
+            </div>
+            <a id="downloadButton">Download Image</a>
+        </div>
+    </div>
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const previewContainer = document.getElementById('previewContainer');
+        const widthInput = document.getElementById('widthInput');
+        const heightInput = document.getElementById('heightInput');
+        const ratioInput = document.getElementById('ratioInput');
+        const qualityInput = document.getElementById('qualityInput');
+        const cropButton = document.getElementById('cropButton');
+        const resizeButton = document.getElementById('resizeButton');
+        const downloadButton = document.getElementById('downloadButton');
+        const resultImage = document.getElementById('resultImage');
+        const resultContainer = document.getElementById('resultContainer');
+
+        let cropper;
+        let selectedImage;
+
+        fileInput.addEventListener('change', (event) => {
+            const files = event.target.files;
+            if (files.length) {
+                previewContainer.innerHTML = ''; // Clear existing previews
+                Array.from(files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const imgElement = document.createElement('img');
+                        imgElement.src = reader.result;
+                        imgElement.classList.add('preview-item-image');
+
+                        const removeButton = document.createElement('button');
+                        removeButton.classList.add('remove-button');
+                        removeButton.innerText = 'X';
+                        removeButton.onclick = () => {
+                            previewContainer.removeChild(previewItem);
+                            if (cropper && selectedImage.src === imgElement.src) {
+                                cropper.destroy();
+                                cropper = null;
+                            }
+                        };
+
+                        const previewItem = document.createElement('div');
+                        previewItem.classList.add('preview-item');
+                        previewItem.appendChild(imgElement);
+                        previewItem.appendChild(removeButton);
+                        previewContainer.appendChild(previewItem);
+
+                        imgElement.onload = () => {
+                            if (cropper) cropper.destroy();
+                            selectedImage = imgElement;
+                            const cropperImage = new Image();
+                            cropperImage.src = imgElement.src;
+                            document.querySelector('.upload-box').innerHTML = '';
+                            document.querySelector('.upload-box').appendChild(cropperImage);
+
+                        };
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+    const fitFillSelect = document.getElementById('fitFillSelect');
+    const bgColorSelect = document.getElementById('bgColorSelect');
+    const uploadBox = document.querySelector('.upload-box');
+    
+    // Apply background color and fit/fill settings
+    function applySettings() {
+        const fitFillValue = fitFillSelect.value;
+        const bgColorValue = bgColorSelect.value;
+
+        if (cropper) {
+            const canvas = cropper.getCroppedCanvas();
+            const ctx = canvas.getContext('2d');
+            
+            if (bgColorValue === 'none') {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            } else {
+                ctx.fillStyle = bgColorValue;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            canvas.width = width;
+            canvas.height = height;
+            ctx.putImageData(imageData, 0, 0);
+        }
+        
+        // Apply fit/fill settings to the image
+        const images = uploadBox.querySelectorAll('img');
+        images.forEach(img => {
+            img.style.objectFit = fitFillValue;
+        });
+    }
+
+    fitFillSelect.addEventListener('change', applySettings);
+    bgColorSelect.addEventListener('change', applySettings);
+});
+
+
+        widthInput.addEventListener('input', () => {
+            if (ratioInput.checked && cropper) {
+                const height = widthInput.value / (cropper.getData().width / cropper.getData().height);
+                heightInput.value = Math.floor(height);
+            }
+        });
+
+        heightInput.addEventListener('input', () => {
+            if (ratioInput.checked && cropper) {
+                const width = heightInput.value * (cropper.getData().width / cropper.getData().height);
+                widthInput.value = Math.floor(width);
+            }
+        });
+
+        cropButton.addEventListener('click', () => {
+            if (cropper) {
+                const width = parseInt(widthInput.value, 10) || cropper.getCanvasData().width;
+                const height = parseInt(heightInput.value, 10) || cropper.getCanvasData().height;
+
+                const croppedCanvas = cropper.getCroppedCanvas({
+                    width: width,
+                    height: height,
+                });
+
+                croppedCanvas.toBlob((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    resultImage.src = url;
+                    resultContainer.style.display = 'block';
+                    downloadButton.href = url;
+                    downloadButton.download = 'cropped-image.png';
+                    downloadButton.style.display = 'block';
+                }, 'image/png');
+            }
+        });
+        document.querySelectorAll('.size-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const width = button.getAttribute('data-width');
+                const height = button.getAttribute('data-height');
+                widthInput.value = width;
+                heightInput.value = height;
+            });
+        });
+        resizeButton.addEventListener('click', () => {
+            if (selectedImage) {
+                const width = parseInt(widthInput.value, 10);
+                const height = parseInt(heightInput.value, 10);
+                if (width && height) {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const img = new Image();
+                    img.src = selectedImage.src;
+                    img.onload = () => {
+                        ctx.drawImage(img, 0, 0, width, height);
+                        canvas.toBlob((blob) => {
+                            const url = URL.createObjectURL(blob);
+                            resultImage.src = url;
+                            resultContainer.style.display = 'block';
+                            downloadButton.href = url;
+                            downloadButton.download = 'resized-image.png';
+                            downloadButton.style.display = 'inline-block';
+                        }, 'image/png');
+                    };
+                } else {
+                    alert('Please enter valid width and height values.');
+                }
+            } else {
+                alert('No image selected for resizing.');
+            }
+        });
+
+
+    </script>
+</body>
+
+</html>
